@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conta Bancaria</title>
+</head>
+<body>
+    <h1>Conta Bancaria</h1>
+    
+    <div>
+        <h2>Conta Bancaria</h2>
+        <p id="accountInfo"></p>
+        <input type="number" id="amount" placeholder="Valor">
+        <button onclick="deposit()">Depositar</button>
+        <button onclick="withdraw()">Sacar</button>
+    </div>
+
+    <script>
+        class ContaBancaria {
+            #titular;
+            #saldo;
+
+            constructor(titular, saldoInicial = 0) {
+                this.#titular = titular;
+                this.#saldo = saldoInicial;
+            }
+
+            depositar(valor) {
+                if (valor <= 0) {
+                    throw new Error("Valor de depósito deve ser positivo");
+                }
+                this.#saldo += valor;
+                return this.#saldo;
+            }
+
+            sacar(valor) {
+                if (valor <= 0) {
+                    throw new Error("Valor de saque deve ser positivo");
+                }
+                if (valor > this.#saldo) {
+                    throw new Error("Saldo insuficiente");
+                }
+                this.#saldo -= valor;
+                return this.#saldo;
+            }
+
+            getTitular() {
+                return this.#titular;
+            }
+
+            getSaldo() {
+                return this.#saldo;
+            }
+        }
+
+       
+        const minhaConta = new ContaBancaria("Pedro Nowack", 1000);
+        
+       
+        function updateAccountInfo() {
+            document.getElementById('accountInfo').innerHTML = `
+                <strong>Titular:</strong> ${minhaConta.getTitular()}<br>
+                <strong>Saldo:</strong> R$ ${minhaConta.getSaldo().toFixed(2)}
+            `;
+        }
+        
+    
+        function deposit() {
+            const valor = parseFloat(document.getElementById('amount').value);
+            try {
+                minhaConta.depositar(valor);
+                updateAccountInfo();
+                alert(`Depósito de R$ ${valor.toFixed(2)} realizado com sucesso!`);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+        
+
+        function withdraw() {
+            const valor = parseFloat(document.getElementById('amount').value);
+            try {
+                minhaConta.sacar(valor);
+                updateAccountInfo();
+                alert(`Saque de R$ ${valor.toFixed(2)} realizado com sucesso!`);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+        
+
+        updateAccountInfo();
+    </script>
+</body>
+</html>

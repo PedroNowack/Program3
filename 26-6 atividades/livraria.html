@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Biblioteca Simplificado</title>
+</head>
+<body>
+    <h1>Sistema de Biblioteca</h1>
+    
+    <div>
+        <h2>Alunos</h2>
+        <input type="text" id="studentName" placeholder="Nome do aluno">
+        <input type="text" id="studentId" placeholder="Matrícula">
+        <button onclick="registerStudent()">Registrar Aluno</button>
+        <p id="currentStudent"></p>
+    </div>
+    
+    <div>
+        <h2>Livros</h2>
+        <select id="bookList">
+            <option value="">Selecione um livro</option>
+        </select>
+        <button onclick="borrowBook()" id="borrowBtn" disabled>Pegar Livro</button>
+        <button onclick="returnBook()" id="returnBtn" disabled>Devolver Livro</button>
+    </div>
+    
+    <div>
+        <h3>Status dos Livros:</h3>
+        <div id="booksStatus"></div>
+    </div>
+
+    <script>
+    
+        class Livro {
+            constructor(titulo, autor) {
+                this.titulo = titulo;
+                this.autor = autor;
+                this.disponivel = true;
+                this.emprestadoPara = null;
+            }
+            
+            emprestar(aluno) {
+                if (this.disponivel) {
+                    this.disponivel = false;
+                    this.emprestadoPara = aluno;
+                    return true;
+                }
+                return false;
+            }
+            
+            devolver() {
+                if (!this.disponivel) {
+                    this.disponivel = true;
+                    this.emprestadoPara = null;
+                    return true;
+                }
+                return false;
+            }
+        }
+        
+        
+        class Aluno {
+            constructor(nome, matricula) {
+                this.nome = nome;
+                this.matricula = matricula;
+            }
+            
+            pegarLivro(livro) {
+                return livro.emprestar(this);
+            }
+        }
+        
+       
+        const livros = [
+            new Livro("Dom Casmurro", "Machado de Assis"),
+            new Livro("O Cortiço", "Aluísio Azevedo"),
+            new Livro("Vidas Secas", "Graciliano Ramos")
+        ];
+        
+        let alunoAtual = null;
+        
+    
+        function updateBookList() {
+            const select = document.getElementById('bookList');
+            select.innerHTML = '<option value="">Selecione um livro</option>';
+            
+            livros.forEach((livro, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${livro.titulo} - ${livro.autor} (${livro.disponivel ? 'Disponível' : 'Emprestado'})`;
+                select.appendChild(option);
+            });
+            
+            updateBookStatus();
+        }
+        
+    
+        function updateBookStatus() {
+            const statusDiv = document.getElementById('booksStatus');
+            statusDiv.innerHTML = '';
+            
+            livros.forEach(livro => {
+                const p = document.createElement('p');
+                let status = livro.disponivel ? 'Disponivel' : `Emprestado para: ${livro.emprestadoPara?.nome || 'N/A'}`;
+                p.textContent = `${livro.titulo}: ${status}`;
+                statusDiv.appendChild(p);
+            });
+        }
+        
+
+        function registerStudent() {
+            const nome = document.getElementById('studentName').value;
+            const matricula = document.getElementById('studentId').value;
+            
+            if (nome && matricula) {
+                alunoAtual = new Aluno(nome, matricula);
+                document.getElementById('currentStudent').textContent = `Aluno atual: ${nome} (${matricula})`;
+                document.getElementById('borrowBtn').disabled = false;
+            }
+        }
+        
+ 
+        function borrowBook() {
+            if (!alunoAtual) {
+                alert("Registre um aluno primeiro!");
+                return;
+            }
+            
+            const select = document.getElementById('bookList');
+            const livroIndex = select.value;
+            
+            if (livroIndex === "") {
+                alert("Selecione um livro!");
+                return;
+            }
+            
+            const livro = livros[livroIndex];
+            
+            if (alunoAtual.pegarLivro(livro)) {
+                alert(`Livro "${livro.titulo}" emprestado com sucesso para ${alunoAtual.nome}`);
+            } else {
+                alert(`Livro "${livro.titulo}" não está disponível`);
+            }
+            
+            updateBookList();
+        }
+        
+    
+        function returnBook() {
+            const select = document.getElementById('bookList');
+            const livroIndex = select.value;
+            
+            if (livroIndex === "") {
+                alert("Selecione um livro!");
+                return;
+            }
+            
+            const livro = livros[livroIndex];
+            
+            if (livro.devolver()) {
+                alert(`Livro "${livro.titulo}" devolvido com sucesso`);
+            } else {
+                alert(`Livro "${livro.titulo}" já está disponível`);
+            }
+            
+            updateBookList();
+        }
+        
+        
+        updateBookList();
+        
+        
+        document.getElementById('bookList').addEventListener('change', function() {
+            const livroIndex = this.value;
+            const borrowBtn = document.getElementById('borrowBtn');
+            const returnBtn = document.getElementById('returnBtn');
+            
+            if (livroIndex === "") {
+                borrowBtn.disabled = true;
+                returnBtn.disabled = true;
+            } else {
+                const livro = livros[livroIndex];
+                borrowBtn.disabled = !livro.disponivel || !alunoAtual;
+                returnBtn.disabled = livro.disponivel;
+            }
+        });
+    </script>
+</body>
+</html>
